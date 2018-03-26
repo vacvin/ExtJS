@@ -10,10 +10,22 @@ Ext.onReady(function() {
 
 appInit = function(){
 	var initTreePanel = function(config) {
+		this.store = Ext.create('Ext.data.TreeStore', {
+		    root: {
+		        expanded: true,
+		        children: [
+		            { text: 'Jean Grey', leaf: true },
+		            { text: 'Phillip Fry', leaf: true},
+		            { text: 'Peter Quill', leaf: true }
+		        ]
+		    }
+		});
+
 		this.tree = Ext.create('Ext.tree.Panel', {
             rootVisible: true,
             width: 280,
             height: 500,
+            store: this.store,
             border: false,
             margin: 10
         });
@@ -24,23 +36,32 @@ appInit = function(){
 		    title: 'Tree Panel',	
 		    items: [this.tree]
 		});
+
+		this.reload = function(userData) {
+			var rootNode = this.store.getRootNode();
+			rootNode.removeAll();
+
+			userData.forEach(function(e) {
+				rootNode.appendChild({
+			        text: e.firstName + ' ' + e.lastName,
+			        leaf: true
+				});
+			});
+		};
 	};
 
 	var initUserGridPanel = function(config) {
 		this.date = [{
 				        "firstName": "Jean",
 				        "lastName": "Grey",
-				        "officeLocation": "Lawrence, KS",
 				        "phoneNumber": "(372) 792-6728"
 				    }, {
 				        "firstName": "Phillip",
 				        "lastName": "Fry",
-				        "officeLocation": "Lawrence, KS",
 				        "phoneNumber": "(318) 224-8644"
 				    }, {
 				        "firstName": "Peter",
 				        "lastName": "Quill",
-				        "officeLocation": "Redwood City, CA",
 				        "phoneNumber": "(718) 480-8560"
 				    }];
 
@@ -68,6 +89,11 @@ appInit = function(){
 	            flex: 1
 	        }]
 		});
+
+		this.AddUser = function(userInfo) {
+			this.date.push(userInfo);
+			this.store.reload();
+		};
 	};
 
 	var initTabInfoPanel = function(config) {		
@@ -79,12 +105,17 @@ appInit = function(){
 	};
 
 	var initContentTopPanel = function(config) {
+		this.btnAdd = Ext.create('Ext.Button', {
+		    text: 'Add'
+		});
+
 		this.panel = Ext.create('Ext.panel.Panel', {
 			region: 'north',        
 	        layout: 'form',
 	        title: "Employee Input Area",    	
 	    	height: 300,	    	
 	    	defaultType: 'textfield',
+	    	tbar: [this.btnAdd],
 		    items: [{
 		       	fieldLabel: 'First Name',
 		        name: 'first',
@@ -119,7 +150,6 @@ appInit = function(){
 	        layout: 'border',
 	        items: [this.contentTopPanel.panel, this.contentCenterPanel.panel]
 		});
-
 	};
 
 	var initContainer = function(config) {
@@ -131,6 +161,20 @@ appInit = function(){
 	        title: 'Ext Layout Browser',        
 			items: [this.treePanel.panel, this.contentPanel.panel]
 		});
+
+		this.contentPanel.contentTopPanel.btnAdd.on('click', function() {
+			var first = this.contentPanel.contentTopPanel.panel.items.items[0].getValue();
+			var last = this.contentPanel.contentTopPanel.panel.items.items[1].getValue();
+			var phoneNumber = this.contentPanel.contentTopPanel.panel.items.items[2].getValue();
+			var userData = {
+		        "firstName": first,
+		        "lastName": last,
+		        "phoneNumber": phoneNumber
+		    };
+
+			this.contentPanel.contentCenterPanel.userGridPanel.AddUser(userData);
+	        this.treePanel.reload(this.contentPanel.contentCenterPanel.userGridPanel.date);
+	    }, this);
 	};
 
 	new initContainer();
