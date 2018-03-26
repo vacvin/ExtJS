@@ -128,6 +128,19 @@ appInit = function(){
 		        name: 'phoneNumber'
 		    }]
 		});
+
+		this.getInputUserData = function() {
+			var first = this.panel.items.items[0].getValue();
+			var last = this.panel.items.items[1].getValue();
+			var phoneNumber = this.panel.items.items[2].getValue();
+			var userData = {
+		        "firstName": first,
+		        "lastName": last,
+		        "phoneNumber": phoneNumber
+		    };
+
+		    return userData;
+		};
 	};
 
 	var initContentCenterPanel = function(config) {
@@ -163,15 +176,7 @@ appInit = function(){
 		});
 
 		this.contentPanel.contentTopPanel.btnAdd.on('click', function() {
-			var first = this.contentPanel.contentTopPanel.panel.items.items[0].getValue();
-			var last = this.contentPanel.contentTopPanel.panel.items.items[1].getValue();
-			var phoneNumber = this.contentPanel.contentTopPanel.panel.items.items[2].getValue();
-			var userData = {
-		        "firstName": first,
-		        "lastName": last,
-		        "phoneNumber": phoneNumber
-		    };
-
+			var userData = this.contentPanel.contentTopPanel.getInputUserData();
 			this.contentPanel.contentCenterPanel.userGridPanel.AddUser(userData);
 	        this.treePanel.reload(this.contentPanel.contentCenterPanel.userGridPanel.date);
 	    }, this);
