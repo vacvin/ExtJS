@@ -51,7 +51,7 @@ appInit = function(){
 	};
 
 	var initUserGridPanel = function(config) {
-		this.date = [{
+		this.data = [{
 				        "firstName": "Jean",
 				        "lastName": "Grey",
 				        "phoneNumber": "(372) 792-6728"
@@ -66,7 +66,7 @@ appInit = function(){
 				    }];
 
 		this.store = Ext.create('Ext.data.Store', {
-		    data: this.date
+		    data: this.data
 		});
 
 		this.panel = Ext.create('Ext.grid.Panel', {
@@ -76,6 +76,23 @@ appInit = function(){
 	    	fullscreen: true,
 	        store: this.store,
 	        columns: [{
+            	xtype:'actioncolumn',
+	            width:50,
+	            items: [{
+	                iconCls: 'x-fa fa-trash',
+	                tooltip: 'Delete',
+	                handler: function(grid, rowIndex, colIndex) {
+	                    var rec = grid.getStore().getAt(rowIndex);
+	                    this.fireEvent('deleteUser', rec);
+	                }
+	            }],
+	            listeners: {
+	                scope: this,
+	                deleteUser: function(rec) {
+	                    this.DeleteUser(rec);
+	                }
+	            }
+        	},{
 	            text: 'First Name',
 	            dataIndex: 'firstName',
 	            flex: 1
@@ -91,8 +108,15 @@ appInit = function(){
 		});
 
 		this.AddUser = function(userInfo) {
-			this.date.push(userInfo);
+			this.data.push(userInfo);
 			this.store.reload();
+		};
+
+		this.DeleteUser = function(rec) {
+			var idx = this.data.indexOf(rec.data);
+			if (idx !== -1) this.data.splice(idx, 1);
+			this.store.reload();
+			this.panel.fireEvent('userTreeReload', rec);
 		};
 	};
 
@@ -175,10 +199,14 @@ appInit = function(){
 			items: [this.treePanel.panel, this.contentPanel.panel]
 		});
 
+		this.contentPanel.contentCenterPanel.userGridPanel.panel.addListener("userTreeReload", function(){
+	        this.treePanel.reload(this.contentPanel.contentCenterPanel.userGridPanel.data);
+		}, this);
+
 		this.contentPanel.contentTopPanel.btnAdd.on('click', function() {
 			var userData = this.contentPanel.contentTopPanel.getInputUserData();
 			this.contentPanel.contentCenterPanel.userGridPanel.AddUser(userData);
-	        this.treePanel.reload(this.contentPanel.contentCenterPanel.userGridPanel.date);
+	        this.treePanel.reload(this.contentPanel.contentCenterPanel.userGridPanel.data);
 	    }, this);
 	};
 
